@@ -51,8 +51,8 @@ Generate an administrative credential to access the Django admin panel, populate
 6. **Launch the Local Server**
     ```bash
     python manage.py runserver
-    Once the server spins up, open your browser and navigate to:
-    Application Feed and Admin Dashboard Panel
+Once the server spins up, open your browser and navigate to:
+Application Feed and Admin Dashboard Panel
 
 ### Security & Optimization Note
 This repository includes a strict .gitignore file configuration. Local development components such as temporary runtime directories (__pycache__/), application media states, and the specific database file (db.sqlite3) are explicitly excluded to maintain a production-clean code delivery structure.
