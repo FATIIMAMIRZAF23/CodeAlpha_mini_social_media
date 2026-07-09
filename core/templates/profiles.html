@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Users</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+            min-height: 100vh;
+            margin: 0; 
+            padding: 20px; 
+        }
+        .nav-bar { 
+            max-width: 600px; 
+            margin: 0 auto 20px auto; 
+            background: rgba(255, 255, 255, 0.85); 
+            padding: 15px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+        }
+        .nav-bar a { text-decoration: none; color: #0284c7; font-weight: bold; }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(5px);
+            padding: 25px; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07); 
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        h2 { color: #0369a1; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #bae6fd; }
+        .user-row a { text-decoration: none; color: #0369a1; font-weight: bold; font-size: 1.1em; transition: color 0.2s; }
+        .user-row a:hover { color: #0284c7; text-shadow: 0 0 8px rgba(56, 189, 248, 0.5); }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <a href="{% url 'home_feed' %}">← Back to Feed</a>
+</div>
+
+<div class="container">
+    <h2>Explore Users</h2>
+    {% for profile in profiles %}
+    <div class="user-row">
+        <!-- Clicking this link routes to the user account page -->
+        <a href="{% url 'user_profile_view' profile.user.username %}">@{{ profile.user.username }}</a>
+        <span style="color: gray; font-size: 0.9em;">{{ profile.user.posts.count }} Posts</span>
+    </div>
+    {% empty %}
+    <p>No other users found.</p>
+    {% endfor %}
+</div>
+
+</body>
+</html>

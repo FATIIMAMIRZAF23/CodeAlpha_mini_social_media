@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mini Social Media Feed</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+            min-height: 100vh;
+            margin: 0; 
+            padding: 20px; 
+        }
+        h2 {
+            color: #0369a1;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(56, 189, 248, 0.5);
+            font-size: 2em;
+            text-align: center;
+        }
+        .feed-container { max-width: 600px; margin: 0 auto; }
+        .post-card { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(5px);
+            padding: 20px; 
+            border-radius: 16px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: transform 0.2s;
+        }
+        .post-card:hover {
+            transform: translateY(-2px);
+        }
+        .post-header { display: flex; justify-content: space-between; align-items: center; }
+        .btn { 
+            padding: 6px 14px; 
+            border: none; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-follow { 
+            background: linear-gradient(135deg, #38bdf8, #0284c7); 
+            color: white; 
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+        }
+        .btn-follow:hover {
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.9);
+        }
+        .btn-following { background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+        .btn-like { 
+            background: none; 
+            color: #0284c7; 
+            font-weight: bold; 
+            font-size: 1em;
+        }
+        .btn-liked { 
+            color: #0369a1; 
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+        }
+        .comments-section { margin-top: 15px; border-top: 1px dashed #bae6fd; padding-top: 10px; }
+        
+        /* Pretty Blue Navigation Bar Card */
+        .nav-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div style="max-width: 600px; margin: 10px auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <a href="{% url 'profiles_list' %}" style="text-decoration: none; color: #1877f2; font-weight: bold; font-size: 1.1em;">👥 View All Users Directory</a>
+    </div>
+<div class="feed-container">
+    <h2>Your Feed</h2>
+    {% for post in posts %}
+    <div class="post-card">
+        <div class="post-header">
+            <strong>{{ post.author.username }}</strong>
+            <!-- Follow/Unfollow Button wrapper -->
+            {% if post.author != request.user %}
+                <button class="btn {% if post.author.profile in request.user.profile.following.all %}btn-following{% else %}btn-follow{% endif %}" 
+                        onclick="toggleFollow(this, '{{ post.author.profile.id }}')">
+                    {% if post.author.profile in request.user.profile.following.all %}Following{% else %}Follow{% endif %}
+                </button>
+            {% endif %}
+        </div>
+        
+        <p>{{ post.content }}</p>
+        
+        <!-- Like Button -->
+        <button class="btn btn-like {% if request.user in post.likes.all %}btn-liked{% endif %}" 
+                onclick="toggleLike(this, '{{ post.id }}')">
+            👍 <span class="like-count">{{ post.total_likes }}</span> Likes
+        </button>
+
+        <!-- Comments Display -->
+        <div class="comments-section">
+            <h4>Comments</h4>
+            {% for comment in post.comments.all %}
+                <p><strong>{{ comment.author.username }}:</strong> {{ comment.content }}</p>
+            {% empty %}
+                <p style="color: gray; font-size: 0.9em;">No comments yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+// JavaScript AJAX handling for Likes
+function toggleLike(button, postId) {
+    fetch(`/like/${postId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const countSpan = button.querySelector('.like-count');
+        countSpan.innerText = data.likes_count;
+        if(data.liked) {
+            button.classList.add('btn-liked');
+        } else {
+            button.classList.remove('btn-liked');
+        }
+    });
+}
+
+// JavaScript AJAX handling for Follows
+function toggleFollow(button, profileId) {
+    fetch(`/follow/${profileId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.following) {
+            button.innerText = "Following";
+            button.className = "btn btn-following";
+        } else {
+            button.innerText = "Follow";
+            button.className = "btn btn-follow";
+        }
+    });
+}
+</script>
+</body>
+</html>

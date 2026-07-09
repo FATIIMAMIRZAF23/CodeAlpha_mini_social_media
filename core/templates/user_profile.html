@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ target_user.username }}'s Profile</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+            min-height: 100vh;
+            margin: 0; 
+            padding: 20px; 
+        }
+        .nav-bar { 
+            max-width: 600px; 
+            margin: 0 auto 20px auto; 
+            background: rgba(255, 255, 255, 0.85); 
+            padding: 15px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+        }
+        .nav-bar a { text-decoration: none; color: #0284c7; font-weight: bold; margin-right: 15px; }
+        .profile-header { 
+            max-width: 600px; 
+            margin: 0 auto 20px auto; 
+            background: rgba(255, 255, 255, 0.9); 
+            padding: 25px; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07); 
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .profile-header h2 { color: #0369a1; text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); margin-bottom: 5px; }
+        
+        /* New Sparkly Stats Design */
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 15px 0;
+            font-size: 1.1em;
+            color: #0369a1;
+        }
+        .stat-box {
+            background: rgba(255, 255, 255, 0.6);
+            padding: 5px 15px;
+            border-radius: 12px;
+            border: 1px solid #bae6fd;
+        }
+        .stat-number {
+            font-weight: bold;
+            color: #0284c7;
+        }
+
+        .btn { 
+            padding: 8px 20px; 
+            border: none; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-follow { 
+            background: linear-gradient(135deg, #38bdf8, #0284c7); 
+            color: white; 
+            box-shadow: 0 4px 10px rgba(56, 189, 248, 0.4);
+        }
+        .btn-following { background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+        .feed-container { max-width: 600px; margin: 0 auto; }
+        .post-card { 
+            background: rgba(255, 255, 255, 0.85); 
+            padding: 20px; 
+            border-radius: 16px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <a href="{% url 'home_feed' %}">🏠 Feed</a>
+    <a href="{% url 'profiles_list' %}">👥 All Users</a>
+</div>
+
+<div class="profile-header">
+    <h2>@{{ target_user.username }}</h2>
+    
+    <!-- Sparkly Relationship Counter Section -->
+    <div class="profile-stats">
+        <div class="stat-box">
+            <span class="stat-number" id="follower-count">{{ target_profile.followers.count }}</span> Followers
+        </div>
+        <div class="stat-box">
+            <span class="stat-number">{{ target_profile.following.count }}</span> Following
+        </div>
+    </div>
+
+    <p style="color: #65676b; margin-bottom: 20px;">{{ target_profile.bio|default:"No bio written yet." }}</p>
+    
+    <button class="btn {% if target_profile in request.user.profile.following.all %}btn-following{% else %}btn-follow{% endif %}" 
+            onclick="toggleFollow(this, '{{ target_profile.id }}')">
+        {% if target_profile in request.user.profile.following.all %}Following{% else %}Follow{% endif %}
+    </button>
+</div>
+
+<div class="feed-container">
+    <h3>Posts by {{ target_user.username }}</h3>
+    {% for post in posts %}
+    <div class="post-card">
+        <p>{{ post.content }}</p>
+        <small style="color: gray;">Posted on {{ post.created_at|date:"M d, Y" }}</small>
+    </div>
+    {% empty %}
+    <p style="text-align: center; color: gray;">This user hasn't posted anything yet.</p>
+    {% endfor %}
+</div>
+
+<script>
+function toggleFollow(button, profileId) {
+    fetch(`/follow/${profileId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Dynamically update button look
+        if(data.following) {
+            button.innerText = "Following";
+            button.className = "btn btn-following";
+        } else {
+            button.innerText = "Follow";
+            button.className = "btn btn-follow";
+        }
+        
+        // Dynamically update the visual follower metric instantly without reload!
+        const followerSpan = document.getElementById('follower-count');
+        if (followerSpan) {
+            followerSpan.innerText = data.followers_count;
+        }
+    });
+}
+</script>
+</body>
+</html>
