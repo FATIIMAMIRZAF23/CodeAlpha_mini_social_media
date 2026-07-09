@@ -47,6 +47,7 @@ Generate an administrative credential to access the Django admin panel, populate
     ```bash
     python manage.py createsuperuser
 (Follow the terminal prompts blindly to define a username, email, and password).
+
 6. **Launch the Local Server**
     ```bash
     python manage.py runserver
